@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.env
+.env.local
+*.log
+.DS_Store
+
+# Local database files created by the built-in MongoDB
+backend/.data/
+
+# Uploaded menu photos (keep the folder, not the files)
+backend/uploads/*
+!backend/uploads/.gitkeep
