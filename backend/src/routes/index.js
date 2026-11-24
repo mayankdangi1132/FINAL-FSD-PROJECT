@@ -16,12 +16,21 @@ const FRONT = authorize('admin', 'foh');
 const STAFF = authorize('admin', 'kitchen', 'foh');
 const CUSTOMER = authorize('customer');
 
-const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 50, standardHeaders: true, legacyHeaders: false, message: { message: 'Too many attempts. Please wait a few minutes and try again.' } });
+// ---------- anti-spam / anti-bot limits ----------
+const limiter = (windowMs, limit, message, perUser = false) => rateLimit({
+  windowMs, limit, standardHeaders: true, legacyHeaders: false, message: { message },
+  ...(perUser ? { keyGenerator: (req) => `user:${req.user.id}` } : {}),
+});
+const authLimiter = limiter(15 * 60 * 1000, 30, 'Too many sign-in attempts. Please wait a few minutes and try again.');
+const registerLimiter = limiter(60 * 60 * 1000, 10, 'Too many accounts created from this network. Please try again later.');
+// per signed-in customer
+const orderLimiter = limiter(15 * 60 * 1000, 10, 'You are placing orders too quickly. Please wait a few minutes.', true);
+const bookingLimiter = limiter(60 * 60 * 1000, 5, 'Too many booking attempts. Please try again in an hour.', true);
 
 router.get('/health', (req, response) => response.json({ ok: true, time: new Date().toISOString() }));
 
 // ---------- auth ----------
-router.post('/auth/register', authLimiter, validate(auth.schemas.register), h(auth.register));
+router.post('/auth/register', registerLimiter, validate(auth.schemas.register), h(auth.register));
 router.post('/auth/login', authLimiter, validate(auth.schemas.login), h(auth.login));
 router.get('/auth/me', protect, h(auth.me));
 router.patch('/auth/me', protect, validate(auth.schemas.updateMe), h(auth.updateMe));
@@ -46,22 +55,21 @@ router.delete('/menu/:id', protect, ADMIN, h(menu.deleteMenuItem));
 
 router.post('/uploads', protect, ADMIN, menu.uploadMiddleware, h(menu.uploadImage));
 
-// ---------- orders & payments ----------
-router.post('/orders', optionalAuth, validate(orders.schemas.create), h(orders.createOrder));
-router.post('/orders/lookup', authLimiter, validate(orders.schemas.lookup), h(orders.lookupOrder));
+// ---------- orders & payments (customers must be signed in to order) ----------
+router.post('/orders', protect, CUSTOMER, orderLimiter, validate(orders.schemas.create), h(orders.createOrder));
 router.post('/orders/staff', protect, FRONT, validate(orders.schemas.staffOrder), h(orders.createStaffOrder));
 router.get('/orders/my', protect, CUSTOMER, h(orders.listMyOrders));
 router.get('/orders', protect, STAFF, h(orders.listOrders));
 router.get('/orders/:id', optionalAuth, h(orders.getOrder));
 router.patch('/orders/:id/status', protect, STAFF, validate(orders.schemas.status), h(orders.updateOrderStatus));
-router.post('/orders/:id/cancel', optionalAuth, validate(orders.schemas.cancel), h(orders.cancelOrder));
+router.post('/orders/:id/cancel', protect, validate(orders.schemas.cancel), h(orders.cancelOrder));
 router.post('/orders/:id/refund', protect, ADMIN, h(orders.refundOrder));
 router.post('/orders/:id/rate', protect, CUSTOMER, validate(orders.schemas.rate), h(orders.rateOrder));
 router.get('/payments/verify', validate(z.object({ order: z.string(), session_id: z.string() }), 'query'), h(orders.verifyPayment));
 
 // ---------- reservations, tables, waitlist ----------
 router.get('/reservations/availability', validate(res.schemas.availability, 'query'), h(res.availability));
-router.post('/reservations', optionalAuth, validate(res.schemas.create), h(res.createReservation));
+router.post('/reservations', protect, CUSTOMER, bookingLimiter, validate(res.schemas.create), h(res.createReservation));
 router.get('/reservations/my', protect, CUSTOMER, h(res.listMyReservations));
 router.get('/reservations', protect, FRONT, h(res.listReservations));
 router.patch('/reservations/:code', protect, validate(res.schemas.update), h(res.updateReservation));

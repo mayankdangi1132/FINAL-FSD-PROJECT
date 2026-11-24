@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { Bell, ChevronDown, LayoutDashboard, LogOut, Menu as MenuIcon, Search, ShoppingBag, UtensilsCrossed, X } from 'lucide-react';
 import { homeFor, useApp } from '../context/AppContext.jsx';
+import ThemeToggle from './ThemeToggle.jsx';
 import { initials, timeAgo } from '../utils/format.js';
 import { ROLE_LABELS } from '../utils/status.js';
 
@@ -47,6 +48,7 @@ export default function Navbar() {
         </nav>
 
         <div className="nav-actions">
+          <ThemeToggle />
           {user?.role === 'customer' && (
             <div className="dropdown">
               <button className="icon-btn" onClick={openBell} aria-label={`Notifications${unread ? `, ${unread} unread` : ''}`} aria-expanded={panel === 'bell'}>

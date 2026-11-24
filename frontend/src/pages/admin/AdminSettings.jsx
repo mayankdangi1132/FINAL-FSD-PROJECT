@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { RotateCcw, Save } from 'lucide-react';
+import { Info, RotateCcw, Save } from 'lucide-react';
 import { useApp } from '../../context/AppContext.jsx';
 import { DAY_NAMES } from '../../utils/format.js';
 import { ConfirmDialog, Field, PageHeader, Toggle } from '../../components/ui.jsx';
@@ -74,10 +74,10 @@ export default function AdminSettings() {
             <Toggle id="sv-del" checked={s.services.delivery} onChange={(v) => setService('delivery', v)} label="Delivery" />
             <Toggle id="sv-pick" checked={s.services.pickup} onChange={(v) => setService('pickup', v)} label="Pickup" />
             <Toggle id="sv-dine" checked={s.services.dineIn} onChange={(v) => setService('dineIn', v)} label="Dine-in ordering" />
-            <Toggle id="sv-guest" checked={s.guestCheckout} onChange={(v) => setS((x) => ({ ...x, guestCheckout: v }))} label="Allow guest checkout" />
             <Toggle id="sv-cash" checked={s.cashPayments} onChange={(v) => setS((x) => ({ ...x, cashPayments: v }))} label="Accept cash on delivery / pickup" />
           </div>
           {errors.services && <div className="field-error">{errors.services}</div>}
+          <p className="hint-box"><Info size={16} /> Customers must sign in to order or book a table. Each account can hold up to 3 upcoming bookings and 3 unconfirmed orders, which stops spam and bot bookings.</p>
           <h3 className="sub-title">Fees & taxes</h3>
           <div className="form-grid">
             <Field label="GST (%)" htmlFor="st-tax" error={errors.taxRate}><input id="st-tax" type="number" min="0" value={s.taxRate} onChange={setNum('taxRate')} /></Field>

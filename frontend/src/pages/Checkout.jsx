@@ -56,7 +56,18 @@ export default function Checkout() {
 
   if (processing === 'done') return null;
   if (cart.length === 0 && !processing) return <Navigate to="/menu" replace />;
-  if (!user && !settings.guestCheckout) return <Navigate to="/login" replace state={{ from: '/checkout', message: 'Please sign in to place an order.' }} />;
+  if (!user) return <Navigate to="/login" replace state={{ from: '/checkout', message: 'Please sign in to place your order.' }} />;
+  if (user.role !== 'customer') {
+    return (
+      <div className="container narrow">
+        <div className="card access-denied">
+          <h1>Online ordering is for customers</h1>
+          <p className="muted">Staff accounts can't place online orders. Use the Front of House screen to add dine-in orders.</p>
+          <Link to="/" className="btn btn-primary">Back to home</Link>
+        </div>
+      </div>
+    );
+  }
 
   const applyPromo = async () => {
     setApplying(true);
@@ -76,7 +87,6 @@ export default function Checkout() {
     const e = {};
     if (contact.name.trim().length < 2) e.name = 'Please enter your name.';
     if (!PHONE_RE.test(contact.phone.trim())) e.phone = 'Enter a valid 10-digit mobile number.';
-    if (!user && !EMAIL_RE.test(contact.email.trim())) e.email = 'Enter a valid email so we can send your receipt.';
     if (type === 'delivery') {
       if (totals.subtotal < settings.minDeliveryOrder) e.type = `Minimum order for delivery is ${formatCurrency(settings.minDeliveryOrder)}.`;
       if (addressId === 'new') {
@@ -139,7 +149,7 @@ export default function Checkout() {
 
   return (
     <div className="container">
-      <PageHeader title="Checkout" subtitle={user ? `Signed in as ${user.email}` : 'Checking out as a guest'} />
+      <PageHeader title="Checkout" subtitle={`Signed in as ${user.email}`} />
       {formError && <div className="alert alert-error" role="alert">{formError}</div>}
       <form className="two-col" onSubmit={submit} noValidate>
         <div className="checkout-steps">
@@ -169,8 +179,8 @@ export default function Checkout() {
               <Field label="Mobile number" htmlFor="c-phone" error={errors.phone} required hint="We'll text you order updates">
                 <input id="c-phone" name="phone" type="tel" value={contact.phone} onChange={set(setContact)} autoComplete="tel" placeholder="98765 43210" />
               </Field>
-              <Field label="Email" htmlFor="c-email" error={errors.email} required={!user}>
-                <input id="c-email" name="email" type="email" value={contact.email} onChange={set(setContact)} autoComplete="email" readOnly={!!user} />
+              <Field label="Email" htmlFor="c-email">
+                <input id="c-email" name="email" type="email" value={contact.email} autoComplete="email" readOnly />
               </Field>
             </div>
           </section>

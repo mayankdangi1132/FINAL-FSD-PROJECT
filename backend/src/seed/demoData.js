@@ -193,7 +193,6 @@ export const DEFAULT_SETTINGS = {
   ],
   hours: HOURS,
   services: { delivery: true, pickup: true, dineIn: true },
-  guestCheckout: true,
   cashPayments: true,
   taxRate: 5,
   deliveryFee: 40,

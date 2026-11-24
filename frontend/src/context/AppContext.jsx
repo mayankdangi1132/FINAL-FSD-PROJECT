@@ -239,12 +239,6 @@ export function AppProvider({ children }) {
 
   const validatePromo = (code, subtotal) => api('/promotions/validate', { method: 'POST', body: { code, subtotal } });
 
-  const lookupOrder = async (orderId, phone) => {
-    const res = await api('/orders/lookup', { method: 'POST', body: { orderId, phone } });
-    saveGuestToken(res.order.id, res.accessToken);
-    return res.order;
-  };
-
   const updateOrderStatus = (id, to, note = '') => run(
     () => api(`/orders/${id}/status`, { method: 'PATCH', body: { status: to, note } }),
     { success: (o) => `Order #${id} → ${statusLabel(to, o.type)}` },
@@ -389,7 +383,7 @@ export function AppProvider({ children }) {
     refresh: loadRoleData,
     login, register, logout, updateProfile, addAddress, removeAddress,
     addToCart, updateQty, removeFromCart, clearCart,
-    placeOrder, validatePromo, lookupOrder, updateOrderStatus, cancelOrder, refundOrder, rateOrder, createStaffOrder,
+    placeOrder, validatePromo, updateOrderStatus, cancelOrder, refundOrder, rateOrder, createStaffOrder,
     getAvailability, createReservation, updateReservation,
     setTableStatus, addToWaitlist, removeFromWaitlist, seatFromWaitlist,
     saveMenuItem, patchMenuItem, deleteMenuItem, uploadImage, saveCategory, deleteCategory,

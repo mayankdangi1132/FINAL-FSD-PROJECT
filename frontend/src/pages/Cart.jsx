@@ -62,13 +62,17 @@ export default function Cart() {
           {settings.services.delivery && subtotal < settings.freeDeliveryAbove && (
             <p className="hint-box"><Info size={16} /> Add {formatCurrency(settings.freeDeliveryAbove - subtotal)} more for free delivery.</p>
           )}
-          <button className="btn btn-primary btn-block btn-lg" onClick={() => navigate('/checkout')}>
-            Proceed to checkout <ArrowRight size={18} />
+          <button
+            className="btn btn-primary btn-block btn-lg"
+            onClick={() => (user
+              ? navigate('/checkout')
+              : navigate('/login', { state: { from: '/checkout', message: 'Please sign in to place your order. Your cart is saved.' } }))}
+          >
+            {user ? 'Proceed to checkout' : 'Sign in to checkout'} <ArrowRight size={18} />
           </button>
           {!user && (
             <p className="muted small center">
-              {settings.guestCheckout ? 'You can check out as a guest, or ' : 'Please '}
-              <Link to="/login" state={{ from: '/checkout' }}>sign in</Link> to save your order history.
+              New here? <Link to="/register" state={{ from: '/checkout' }}>Create an account</Link> — your cart is saved.
             </p>
           )}
         </aside>

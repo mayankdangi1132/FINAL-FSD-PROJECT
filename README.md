@@ -10,13 +10,14 @@ kitchen and the dining room; managers control the menu, staff, promotions, setti
 
 | Role | What they can do |
 | --- | --- |
-| **Customer** | Browse and search the menu (veg / vegan / gluten-free / price filters), customise dishes (size, spice, add-ons), cart and checkout (delivery, pickup, dine-in), promo codes, card / UPI / cash, live order tracking, cancel before the kitchen accepts, reorder, ratings, table reservations with real-time availability, saved addresses, notifications. Guest checkout supported. |
+| **Customer** | Browse and search the menu (veg / vegan / gluten-free / price filters), customise dishes (size, spice, add-ons), cart and checkout (delivery, pickup, dine-in), promo codes, card / UPI / cash, live order tracking, cancel before the kitchen accepts, reorder, ratings, table reservations with real-time availability, saved addresses, notifications. **Must sign in to order or book.** |
 | **Kitchen staff** | Kitchen display with New / Preparing / Ready columns, timers, modifiers and allergy notes. Sees **no prices or customer contact details**. |
 | **Front of house** | Floor plan with table status, reservations (confirm, seat, assign tables, complete), waitlist, dine-in orders (serve, close bill), pickup / delivery handoff, create dine-in orders. |
 | **Admin / manager** | Dashboard with sales charts, all orders (status changes, cancellations, refunds), reservations, menu & category management with photo upload, promotions, staff accounts and roles, reports with CSV export, activity (audit) log, restaurant settings (hours, services, fees, booking rules). |
 
 **Security:** JWT authentication · bcrypt password hashing · role-based access control on every
-route · no public staff sign-up · server-side validation (zod) · prices recalculated on the server
+route · no public staff sign-up · **sign-in required to order or book a table** · anti-spam limits
+(1 booking per day, max 3 upcoming bookings and 3 unconfirmed orders per account, per-account rate limits) · server-side validation (zod) · prices recalculated on the server
 (the client can't change them) · customers can only see their own orders and reservations ·
 NoSQL-injection filtering · rate-limited login · Helmet security headers · audit log of admin and
 order-status changes · card details never touch our server (Stripe Checkout).
@@ -58,6 +59,10 @@ one tab, sign in as Kitchen Staff in the other and move the order along — the 
 page updates by itself. (Each tab keeps its own sign-in.)
 
 Promo codes to try at checkout: `WELCOME10`, `FLAT75`.
+The site has a **light / dark mode** toggle (moon / sun icon in the top bar); it follows your system theme the first time.
+
+**Documents for your submission and presentation** are in [`docs/`](docs/):
+`Saffron Table - Project Report.pdf` (25 pages) and `Saffron Table - Presentation.pptx` (24 slides with speaker notes for studying).
 To restore the original sample data: **Admin → Settings → Reset demo data** (or `npm run seed`).
 
 ---
@@ -138,13 +143,12 @@ All endpoints are under `/api`. 🔓 public · 👤 signed in · 🧑‍🍳 sta
 | `GET/PATCH /auth/me`, `POST/DELETE /auth/me/addresses` | 👤 | Profile and saved addresses |
 | `GET /settings`, `GET /categories`, `GET /menu` | 🔓 | Restaurant info and menu |
 | `PUT /settings`, `POST/PUT/PATCH/DELETE /menu`, `/categories`, `POST /uploads` | 🛡️ | Manage settings, menu, photos |
-| `POST /orders` | 🔓/👤 | Place an order (guest or customer) |
+| `POST /orders` | 👤 customer | Place an order (sign-in required, per-account limits) |
 | `GET /orders/my` · `GET /orders/:id` | 👤 / owner | Order history · track an order |
-| `POST /orders/lookup` | 🔓 | Find a guest order by number + phone |
 | `GET /orders` · `PATCH /orders/:id/status` | 🧑‍🍳 | Staff order list (filtered by role) · update status (rules per role) |
 | `POST /orders/:id/cancel` · `/refund` · `/rate` | owner / 🛡️ | Cancel, refund, rate |
 | `POST /orders/staff` | front of house | Dine-in order for a table |
-| `GET /reservations/availability` · `POST /reservations` | 🔓 | Free slots · book a table |
+| `GET /reservations/availability` · `POST /reservations` | 🔓 · 👤 customer | Free slots · book a table (sign-in required, max 3 upcoming) |
 | `GET /reservations`, `PATCH /reservations/:code` | front of house | Manage bookings and table assignment |
 | `GET/PATCH /tables`, `/waitlist` | front of house | Floor plan and waitlist |
 | `POST /promotions/validate` · `/promotions` | 🔓 · 🛡️ | Check a promo code · manage promotions |

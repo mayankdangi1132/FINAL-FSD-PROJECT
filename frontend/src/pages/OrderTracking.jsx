@@ -58,10 +58,8 @@ export default function OrderTracking() {
       <div className="container narrow">
         <EmptyState
           icon={Lock} title="This order is private"
-          text={error.requiresLogin ? 'Sign in with the account that placed this order to view it.' : 'Verify the order using the phone number it was placed with.'}
-          action={error.requiresLogin
-            ? <Link to="/login" state={{ from: `/order/${id}` }} className="btn btn-primary">Sign in</Link>
-            : <Link to="/track" className="btn btn-primary">Verify order</Link>}
+          text="Sign in with the account that placed this order to view it."
+          action={<Link to="/login" state={{ from: `/order/${id}` }} className="btn btn-primary">Sign in</Link>}
         />
       </div>
     );
@@ -70,7 +68,7 @@ export default function OrderTracking() {
     return (
       <div className="container narrow">
         <EmptyState icon={Receipt} title={error.status === 404 ? 'Order not found' : 'Could not load this order'} text={error.status === 404 ? `We couldn't find order #${id}.` : error.message}
-          action={<Link to="/track" className="btn btn-primary">Track another order</Link>} />
+          action={<Link to="/track" className="btn btn-primary">See my orders</Link>} />
       </div>
     );
   }

@@ -65,7 +65,6 @@ export const schemas = {
       })).max(10),
       hours: z.object({ mon: day, tue: day, wed: day, thu: day, fri: day, sat: day, sun: day }),
       services: z.object({ delivery: z.boolean(), pickup: z.boolean(), dineIn: z.boolean() }),
-      guestCheckout: z.boolean(),
       cashPayments: z.boolean(),
       taxRate: z.number().min(0).max(28),
       deliveryFee: z.number().min(0),

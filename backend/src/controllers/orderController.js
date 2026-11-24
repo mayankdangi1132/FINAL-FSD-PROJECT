@@ -5,13 +5,14 @@ import { z } from 'zod';
 import { isStaff } from '../middleware/auth.js';
 import { MenuItem, Order, Promotion, Table, nextSeq } from '../models/index.js';
 import { addDays, formatCurrency } from '../utils/format.js';
-import { digits, getSettings, getStripe, logActivity, notify, PHONE_RE } from '../utils/helpers.js';
+import { getSettings, getStripe, logActivity, notify, PHONE_RE } from '../utils/helpers.js';
 import { ApiError } from '../utils/http.js';
 import { calcTotals, unitPrice } from '../utils/pricing.js';
 import { ACTIVE_STATUSES, ORDER_TYPES, canSetStatus, statusLabel } from '../utils/status.js';
 import { env } from '../config/env.js';
 
 const KITCHEN_STATUSES = ['placed', 'confirmed', 'preparing', 'ready'];
+const MAX_WAITING_ORDERS = 3;
 
 // ---------- validation ----------
 const itemInput = z.object({
@@ -57,7 +58,6 @@ export const schemas = {
   }),
   cancel: z.object({ reason: z.string().trim().max(200).optional().default('') }),
   rate: z.object({ stars: z.number().int().min(1).max(5), comment: z.string().trim().max(300).optional().default('') }),
-  lookup: z.object({ orderId: z.string().trim().min(1).max(12), phone: z.string().trim().min(6).max(20) }),
 };
 
 // ---------- helpers ----------
@@ -133,9 +133,11 @@ export async function createOrder(req, res) {
   const settings = await getSettings();
   const serviceKey = { delivery: 'delivery', pickup: 'pickup', 'dine-in': 'dineIn' }[body.type];
 
-  if (req.user && req.user.role !== 'customer') throw new ApiError(403, 'Staff accounts cannot place online orders. Use the front-of-house screen instead.');
-  if (!req.user && !settings.guestCheckout) throw new ApiError(401, 'Please sign in to place an order.');
-  if (!req.user && !body.customer.email) throw new ApiError(400, 'Enter a valid email so we can send your receipt.');
+  // Anti-spam: a customer can only have a few orders waiting for the kitchen to accept them.
+  const waiting = await Order.countDocuments({ userId: req.user._id, status: 'placed' });
+  if (waiting >= MAX_WAITING_ORDERS) {
+    throw new ApiError(429, `You already have ${waiting} orders waiting to be confirmed. Please wait until the restaurant accepts them.`);
+  }
   if (!settings.services[serviceKey]) throw new ApiError(400, `${ORDER_TYPES[body.type]} is not available right now.`);
   if (body.paymentMethod === 'cash' && !settings.cashPayments) throw new ApiError(400, 'Cash payments are not accepted right now.');
 
@@ -187,8 +189,8 @@ export async function createOrder(req, res) {
   const now = new Date();
   const order = await Order.create({
     orderNumber,
-    userId: req.user?._id || null,
-    customer: body.customer,
+    userId: req.user._id,
+    customer: { ...body.customer, email: body.customer.email || req.user.email },
     type: body.type,
     address,
     table,
@@ -258,15 +260,6 @@ export async function getOrder(req, res) {
   if (req.user?.role === 'kitchen') return res.json(kitchenView(order));
   if (isStaff(req.user) || isOwner(req, order) || (!order.userId && tokenMatches(req, order))) return res.json(order);
   throw new ApiError(403, 'This order is private.', { requiresLogin: Boolean(order.userId) });
-}
-
-// POST /api/orders/lookup — guests find their order with order number + phone
-export async function lookupOrder(req, res) {
-  const order = await Order.findOne({ orderNumber: Number(req.body.orderId.replace(/\D/g, '')) || -1 }).select('+accessToken');
-  if (!order || !order.customer?.phone || digits(order.customer.phone) !== digits(req.body.phone)) {
-    throw new ApiError(404, "We couldn't find an order with that number and phone. Please check and try again.");
-  }
-  res.json({ order, accessToken: order.accessToken });
 }
 
 // PATCH /api/orders/:id/status — staff, limited by role (see canSetStatus)

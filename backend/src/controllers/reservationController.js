@@ -6,6 +6,7 @@ import { getSettings, logActivity, notify, PHONE_RE } from '../utils/helpers.js'
 import { ApiError } from '../utils/http.js';
 import { slotsFor } from '../utils/reservations.js';
 
+const MAX_UPCOMING = 3;
 const dateKey = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Choose a valid date.');
 
 export const schemas = {
@@ -57,15 +58,20 @@ export async function availability(req, res) {
 export async function createReservation(req, res) {
   const body = req.body;
   const settings = await getSettings();
-  if (req.user && req.user.role !== 'customer') throw new ApiError(403, 'Staff should add walk-ins from the front-of-house screen.');
   if (!withinWindow(body.date, settings)) throw new ApiError(400, `Choose a date within the next ${settings.reservation.bookingWindowDays} days.`);
   if (body.guests > settings.reservation.maxParty) throw new ApiError(400, `For more than ${settings.reservation.maxParty} guests, please call us.`);
+  // Anti-spam: one booking per day and a few upcoming bookings per account,
+  // so nobody (or no bot) can reserve the whole restaurant.
+  const mine = await Reservation.find({ userId: req.user._id, status: { $in: ['pending', 'confirmed'] }, date: { $gte: toDateKey() } });
+  if (mine.some((r) => r.date === body.date)) throw new ApiError(409, 'You already have a booking on this date. Cancel it first to book a different time.');
+  if (mine.length >= MAX_UPCOMING) throw new ApiError(429, `You can hold up to ${MAX_UPCOMING} upcoming reservations at a time.`);
+
   const slot = (await slotsForDate(body.date, body.guests, settings)).find((s) => s.time === body.time);
   if (!slot) throw new ApiError(400, 'Please pick one of the available times.');
   if (!slot.available) throw new ApiError(409, 'Sorry, that time was just booked. Please choose another.');
 
   const code = `R${await nextSeq('reservation', 2000)}`;
-  const reservation = await Reservation.create({ ...body, code, userId: req.user?._id || null, status: 'pending' });
+  const reservation = await Reservation.create({ ...body, code, userId: req.user._id, status: 'pending' });
   await logActivity(req, `Reservation ${code} requested for ${body.guests} guests on ${body.date} at ${body.time}`, body.name);
   await notify(reservation.userId, `Reservation ${code} received — we'll confirm it shortly`);
   res.status(201).json(reservation);

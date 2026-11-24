@@ -9,6 +9,7 @@ import { initials } from '../utils/format.js';
 import { ROLE_LABELS } from '../utils/status.js';
 import Navbar from './Navbar.jsx';
 import Footer from './Footer.jsx';
+import ThemeToggle from './ThemeToggle.jsx';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -86,6 +87,7 @@ export function DashboardLayout() {
         <header className="dash-topbar">
           <button className="icon-btn dash-menu-btn" onClick={() => setOpen(true)} aria-label="Open menu"><MenuIcon size={22} /></button>
           <div className="dash-topbar-spacer" />
+          <ThemeToggle />
           <div className="dash-user">
             <span className="avatar">{initials(user.name)}</span>
             <div>

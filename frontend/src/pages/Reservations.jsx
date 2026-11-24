@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Accessibility, CalendarCheck, CalendarDays, Clock, Info, Phone, Users } from 'lucide-react';
+import { Accessibility, CalendarCheck, CalendarDays, Clock, Info, Lock, Phone, Users } from 'lucide-react';
 import { useApp } from '../context/AppContext.jsx';
 import { IMAGES } from '../data/constants.js';
 import { addDays, formatDateKey, formatTime12, toDateKey } from '../utils/format.js';
@@ -162,34 +162,56 @@ export default function Reservations() {
             {errors.time && <div className="field-error" role="alert">{errors.time}</div>}
           </fieldset>
 
-          <div className="form-grid">
-            <Field label="Full name" htmlFor="r-name" error={errors.name} required>
-              <input id="r-name" name="name" value={form.name} onChange={set} autoComplete="name" />
+          {user?.role === 'customer' ? (
+            <>
+            <div className="form-grid">
+              <Field label="Full name" htmlFor="r-name" error={errors.name} required>
+                <input id="r-name" name="name" value={form.name} onChange={set} autoComplete="name" />
+              </Field>
+              <Field label="Mobile number" htmlFor="r-phone" error={errors.phone} required>
+                <input id="r-phone" name="phone" type="tel" value={form.phone} onChange={set} autoComplete="tel" placeholder="98765 43210" />
+              </Field>
+              <Field label="Email" htmlFor="r-email" error={errors.email} required>
+                <input id="r-email" name="email" type="email" value={form.email} onChange={set} autoComplete="email" />
+              </Field>
+              <Field label="Occasion (optional)" htmlFor="r-occasion">
+                <select id="r-occasion" name="occasion" value={form.occasion} onChange={set}>
+                  <option value="">None</option><option>Birthday</option><option>Anniversary</option><option>Business</option><option>Date night</option>
+                </select>
+              </Field>
+            </div>
+            <Field label="Special requests (optional)" htmlFor="r-requests">
+              <textarea id="r-requests" name="requests" rows={3} maxLength={300} value={form.requests} onChange={set} placeholder="High chair, seating preference, dietary needs…" />
             </Field>
-            <Field label="Mobile number" htmlFor="r-phone" error={errors.phone} required>
-              <input id="r-phone" name="phone" type="tel" value={form.phone} onChange={set} autoComplete="tel" placeholder="98765 43210" />
-            </Field>
-            <Field label="Email" htmlFor="r-email" error={errors.email} required>
-              <input id="r-email" name="email" type="email" value={form.email} onChange={set} autoComplete="email" />
-            </Field>
-            <Field label="Occasion (optional)" htmlFor="r-occasion">
-              <select id="r-occasion" name="occasion" value={form.occasion} onChange={set}>
-                <option value="">None</option><option>Birthday</option><option>Anniversary</option><option>Business</option><option>Date night</option>
-              </select>
-            </Field>
-          </div>
-          <Field label="Special requests (optional)" htmlFor="r-requests">
-            <textarea id="r-requests" name="requests" rows={3} maxLength={300} value={form.requests} onChange={set} placeholder="High chair, seating preference, dietary needs…" />
-          </Field>
-          <label className="check-row">
-            <input type="checkbox" name="accessibility" checked={form.accessibility} onChange={set} />
-            <Accessibility size={16} /> I need step-free access or other accessibility support
-          </label>
+            <label className="check-row">
+              <input type="checkbox" name="accessibility" checked={form.accessibility} onChange={set} />
+              <Accessibility size={16} /> I need step-free access or other accessibility support
+            </label>
 
-          {errors.form && <div className="alert alert-error" role="alert">{errors.form}</div>}
-          <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={busy}>
-            Request reservation{time ? ` · ${formatTime12(time)}` : ''}
-          </button>
+            {errors.form && <div className="alert alert-error" role="alert">{errors.form}</div>}
+            <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={busy}>
+              Request reservation{time ? ` · ${formatTime12(time)}` : ''}
+            </button>
+            </>
+          ) : (
+            <div className="signin-prompt">
+              <Lock size={22} />
+              <div>
+                <strong>{user ? 'Bookings are made from a customer account' : 'Sign in to book a table'}</strong>
+                <p className="muted small">
+                  {user
+                    ? 'Staff can seat walk-ins and manage bookings from the Front of House screen.'
+                    : 'You can check availability now. To stop fake and spam bookings, every reservation is linked to a signed-in customer account.'}
+                </p>
+              </div>
+              {!user && (
+                <div className="btn-row">
+                  <Link to="/login" state={{ from: '/reservations', message: 'Please sign in to book a table.' }} className="btn btn-primary">Sign in</Link>
+                  <Link to="/register" state={{ from: '/reservations' }} className="btn btn-ghost">Create account</Link>
+                </div>
+              )}
+            </div>
+          )}
         </form>
 
         <aside className="stack">

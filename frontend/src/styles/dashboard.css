@@ -2,7 +2,7 @@
    Staff dashboards: layout, admin pages, kitchen display, front of house
    ========================================================================== */
 
-.dash { display: flex; min-height: 100vh; background: #f7f3ee; }
+.dash { display: flex; min-height: 100vh; background: var(--dash-bg); }
 .sidebar {
   position: sticky; top: 0; height: 100vh; width: 248px; flex: none; display: flex; flex-direction: column;
   background: #231a13; color: #d9cfc5; padding: 18px 12px; overflow-y: auto; z-index: 50;
@@ -26,7 +26,7 @@
 .sidebar-backdrop { display: none; }
 
 .dash-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.dash-topbar { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 12px; height: 60px; padding: 0 24px; background: rgba(247, 243, 238, 0.92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); }
+.dash-topbar { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 12px; height: 60px; padding: 0 24px; background: var(--dash-bar); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); }
 .dash-menu-btn { display: none; }
 .dash-topbar-spacer { flex: 1; }
 .dash-user { display: flex; align-items: center; gap: 10px; }
@@ -47,7 +47,7 @@
 .rank-list { list-style: none; margin: 0; padding: 0; }
 .rank-list li { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px dashed var(--border); }
 .rank-list li:last-child { border-bottom: none; }
-.rank { width: 24px; height: 24px; border-radius: 50%; background: var(--brand-soft); color: var(--brand); display: grid; place-items: center; font-weight: 700; font-size: 0.78rem; flex: none; }
+.rank { width: 24px; height: 24px; border-radius: 50%; background: var(--brand-soft); color: var(--brand-ink); display: grid; place-items: center; font-weight: 700; font-size: 0.78rem; flex: none; }
 .rank-img { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; min-height: 0; flex: none; }
 .rank-name { flex: 1; font-weight: 600; font-size: 0.9rem; }
 .low-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px dashed var(--border); }
@@ -82,7 +82,7 @@
 .promo-card { display: flex; flex-direction: column; gap: 8px; }
 .promo-card.is-off { opacity: 0.7; }
 .promo-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-.promo-code { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border: 1.5px dashed var(--brand); border-radius: 8px; color: var(--brand); font-weight: 700; letter-spacing: 0.05em; }
+.promo-code { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border: 1.5px dashed var(--brand); border-radius: 8px; color: var(--brand-ink); font-weight: 700; letter-spacing: 0.05em; }
 .promo-value { display: flex; align-items: center; gap: 6px; font-family: var(--font-head); font-size: 1.6rem; font-weight: 700; }
 .promo-card p { margin: 0; }
 .promo-rules { margin: 0; padding-left: 18px; }
@@ -93,7 +93,7 @@
 .hours-day { width: 92px; font-weight: 600; font-size: 0.9rem; }
 .hours-row .check-row { padding: 0; }
 .toggle-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 8px; }
-.danger-zone { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; border-color: #f1b8b8; }
+.danger-zone { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; border-color: color-mix(in srgb, var(--red) 40%, transparent); }
 .danger-zone p { margin: 0; }
 .activity-list { list-style: none; margin: 0; padding: 0; }
 .activity-list li { display: flex; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 0.92rem; }
@@ -113,7 +113,7 @@
 .kds-controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 .kds-clock { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; font-variant-numeric: tabular-nums; padding: 6px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 999px; }
 .kds-board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: start; }
-.kds-col { background: #efe8e0; border-radius: var(--radius); padding: 12px; min-height: 300px; }
+.kds-col { background: var(--surface-3); border-radius: var(--radius); padding: 12px; min-height: 300px; }
 .kds-col-title { display: flex; align-items: center; justify-content: space-between; font-family: var(--font-body); font-size: 0.95rem; font-weight: 700; margin: 2px 4px 12px; text-transform: uppercase; letter-spacing: 0.04em; }
 .kds-new .kds-col-title { color: var(--blue); }
 .kds-preparing .kds-col-title { color: var(--amber); }
@@ -139,11 +139,11 @@
 .ticket-flag { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 600; color: var(--purple); margin-bottom: 6px; }
 .ticket-items { list-style: none; margin: 0; padding: 0; border-top: 1px dashed var(--border); }
 .ticket-items li { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px dashed var(--border); }
-.ticket-qty { min-width: 26px; height: 26px; border-radius: 6px; background: var(--text); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 0.9rem; flex: none; }
+.ticket-qty { min-width: 26px; height: 26px; border-radius: 6px; background: var(--text); color: var(--bg); display: grid; place-items: center; font-weight: 700; font-size: 0.9rem; flex: none; }
 .ticket-name { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 0.95rem; }
 .ticket-mods { font-size: 0.82rem; color: var(--muted); }
-.ticket-note { margin-top: 3px; font-size: 0.82rem; font-weight: 600; color: #9a3412; background: #fff4dc; padding: 2px 6px; border-radius: 5px; width: fit-content; }
-.ticket-instructions { display: flex; gap: 6px; align-items: flex-start; margin-top: 8px; padding: 8px 10px; border-radius: 8px; background: #fff4dc; color: #7c3f06; font-size: 0.84rem; font-weight: 600; }
+.ticket-note { margin-top: 3px; font-size: 0.82rem; font-weight: 600; color: var(--brand-ink); background: var(--amber-soft); padding: 2px 6px; border-radius: 5px; width: fit-content; }
+.ticket-instructions { display: flex; gap: 6px; align-items: flex-start; margin-top: 8px; padding: 8px 10px; border-radius: 8px; background: var(--amber-soft); color: var(--amber); font-size: 0.84rem; font-weight: 600; }
 .ticket-instructions svg { flex: none; margin-top: 2px; }
 .ticket-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 10px; }
 
@@ -159,12 +159,13 @@
 .tile-id { font-size: 1.15rem; font-weight: 800; }
 .tile-seats { display: inline-flex; align-items: center; gap: 3px; font-size: 0.75rem; opacity: 0.8; }
 .tile-info { margin-top: auto; font-size: 0.75rem; font-weight: 600; line-height: 1.25; }
-.st-free { background: var(--green-soft); border-color: #a7dbb6; color: #14532d; }
-.st-reserved { background: var(--blue-soft); border-color: #b5c8fa; color: #1e3a8a; }
-.st-occupied { background: var(--amber-soft); border-color: #f5cf8a; color: #78350f; }
-.st-cleaning { background: var(--gray-soft); border-color: #d6cfc8; color: #44403c; }
+.st-free { background: var(--green-soft); color: var(--green); }
+.st-reserved { background: var(--blue-soft); color: var(--blue); }
+.st-occupied { background: var(--amber-soft); color: var(--amber); }
+.st-cleaning { background: var(--gray-soft); color: var(--gray); }
+.table-tile { border-color: color-mix(in srgb, currentColor 35%, transparent); }
 .service-row { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 8px; flex-wrap: wrap; }
-.service-row.highlight { border-color: #a7dbb6; background: #f3fbf5; }
+.service-row.highlight { border-color: color-mix(in srgb, var(--green) 40%, transparent); background: var(--green-soft); }
 .service-main { flex: 1; min-width: 160px; display: flex; flex-direction: column; }
 .wait-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
 .wait-pos { width: 26px; height: 26px; border-radius: 50%; background: var(--surface-2); display: grid; place-items: center; font-weight: 700; font-size: 0.8rem; flex: none; }
@@ -201,3 +202,6 @@
   .floor { grid-template-columns: repeat(3, 1fr); }
   .table-tile { min-height: 84px; padding: 10px; }
 }
+
+/* ---------- dark mode ---------- */
+:root[data-theme='dark'] .sidebar { background: #0d0a08; border-right: 1px solid var(--border); }
